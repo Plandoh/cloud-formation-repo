@@ -1,0 +1,80 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {
+
+    },
+    "Parameters": {
+      "grp13WebServerKeypair": {
+          "Description": "provide a keypair for WebServer",
+          "Type": "AWS::EC2::KeyPair::KeyName"
+      },
+      "grp13WebServerAMI": {
+          "Description": "provide an AMI for your WebServer",
+          "Type": "String"
+      },
+      "grp13WebServerInstanceType": {
+          "Description": "provide an instance type for your WebServer",
+          "Type": "String",
+          "allowedValue": [
+            "t2.micro",
+            "t2.nano",
+            "t2.small",
+            "t1.micro"
+          ]
+      },
+      "grp13WebServerAZ": {
+          "Description": "provide an AZ for your  webserver",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      }
+
+    },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+      "grp13WebServer": {
+          "Type": "AWS::EC2::Instance",
+          "Properties": {
+              "KeyName": { "Ref": "grp13WebServerKeypair" },
+              "DisableApiTermination": "false",
+              "ImageId": { "Ref": "grp13WebServerAMI" },
+              "InstanceType": { "Ref": "grp13WebServerInstanceType" },
+              "Monitoring": "false",
+              "AvailabilityZone" :{ "Ref": "grp13WebServerAZ" },
+              "NetworkInterfaces": [ {
+                "AssociatePublicIpAddress" : "true",
+                "DeviceIndex" :"0",
+                "GroupSet" : [{ "Fn:: ImportValue": "Group13PrivateSG "}],
+                "SubnetId":{"Fn:: ImportValue": "grp13PublicSN"}
+              }
+
+            ],
+              "Tags": [
+                  {
+                      "Key": "Name",
+                      "Value": "grp13WebServer"
+                  }
+              ],
+              "UserData": {
+                  "Fn::Base64": {
+                      "Fn::Join": [
+                          "",
+                          [
+                              "#!/bin/bash -ex",
+                              "-"
+                          ]
+                      ]
+                  }
+              }
+      }
+              }
+
+    },
+    "Outputs": {
+
+    }
+}

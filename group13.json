@@ -1,0 +1,115 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {
+
+    },
+    "Parameters": {
+      "grp13VPCcidr": {
+          "Description": "provide a cidr for your VPC",
+          "Type": "String"
+      },
+      "grp13PrivateSNAZ": {
+          "Description": "provide an AZ for your private subnet",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "grp13PrivateSNcidr": {
+          "Description": "provide a cidr for your private subnet",
+          "Type": "String"
+      },
+      "grp13PublicSNAZ": {
+          "Description": "provide an AZ for your public subnet",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "grp13PublicSNcidr": {
+          "Description": "provide a cidr for your public subnet",
+          "Type": "[String"
+      }
+
+    },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+      "grp13VPC": {
+        "Type": "AWS::EC2::VPC",
+        "Properties": {
+          "CidrBlock": { "Ref": "grp13VPCcidr" },
+          "Tags": [{ "Key": "Name", "Value":  "grp13VPC" }]
+        }
+      },
+      "grp13IGW": {
+        "Type": "AWS::EC2::InternetGateway",
+        "Properties": {
+          "Tags": [{ "Key": "Name", "Value":  "grp13IGW" }]
+        }
+      },
+      "AttachGateway": {
+        "Type": "AWS::EC2::VPCGatewayAttachment",
+        "Properties": {
+          "VpcId": { "Ref": "grp13VPC" },
+          "InternetGatewayId": { "Ref": "igwName" }
+        }
+      },
+      "grp13PrivateSN": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "grp13PrivateSNAZ" },
+          "VpcId": { "Ref": "grp13VPC" },
+          "CidrBlock":{ "Ref": "grp13PrivateSNcidr" },
+          "Tags": [{ "Key": "Name", "Value":  "group13PrivateSN" }]
+        }
+      },
+      "grp13PublicSN": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "grp13PubblicSNAZ" },
+          "VpcId": { "Ref": "grp13VPC" },
+          "CidrBlock": { "Ref": "grp13PublicSNcidr" },
+          "Tags": [{ "Key": "Name", "Value":  "grp13PublicSN" }]
+        }
+      },
+      "grp13PrivateRT": {
+        "Type": "AWS::EC2::RouteTable",
+        "Properties": {
+          "VpcId": { "Ref": "grp13VPC" },
+          "Tags": [{ "Key": "Name", "Value":  "grp13PrivateRT" }]
+        }
+      },
+      "grp13PublicRT": {
+        "Type": "AWS::EC2::RouteTable",
+        "Properties": {
+          "VpcId": { "Ref": "grp13VPC" },
+          "Tags": [{ "Key": "Name", "Value":  "grp13PublicRT" }]
+        }
+      },
+      "grp13PrivateRTassoc": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+          "SubnetId": { "Ref": "group13PrivateSN" },
+          "RouteTableId": { "Ref": "grp13PrivateRT" }
+        }
+      },
+      "grp13PublicRTassoc": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+          "SubnetId": { "Ref": "grp13PublicSN" },
+          "RouteTableId": { "Ref": "grp13PublicRT" }
+        }
+      },
+      "grp13IGWroute": {
+        "Type": "AWS::EC2::Route",
+        "Properties": {
+          "RouteTableId": { "Ref": "grp13PublicRT" },
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "GatewayId": { "Ref": "grp13IGW" }
+        }
+      }
+    },
+    "Outputs": {
+
+    }
+}

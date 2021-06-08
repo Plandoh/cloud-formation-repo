@@ -1,0 +1,219 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {
+
+    },
+    "Parameters": {
+      "jjtechvpcCIDR": {
+          "Description": "vpc CidrBlock",
+          "Type": "String"
+      },
+      "jjtechPubSNcidr": {
+          "Description": "cidr of your public subnet",
+          "Type": "String"
+      },
+      "jjtechPrvtSNcidr": {
+          "Description": "cidr of your private subnet",
+          "Type": "String"
+      },
+      "jjtechPublicSubnetAZ": {
+          "Description": "AZ for public SN ",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "jjtechPrvtSnAZ": {
+          "Description": "AZ for private SN ",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "jjtechPubRTrouteDestinationCidrBlock": {
+          "Description": "Provide DestinationCidrBlock",
+          "Type": "String"
+      },
+      "EnvironmentName": {
+        "Description": "Environment Name",
+        "Type": "String",
+        "AllowedValues": [
+          "Dev",
+          "UAT",
+          "Pre-Prod"
+        ],
+        "ConstraintDescription": "Environment must match with specified AllowedValue"
+      },
+      "jjtechWebServerSGingressToPortForSSH": {
+          "Description": "Provide Security Group Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "22"
+      },
+      "jjtechWebServerSGingressFromPortForSSH": {
+          "Description": "Provide Security Group Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "22"
+      },
+      "jjtechWebServerSGsourceIPforSSH": {
+          "Description": "Provide Source IP for jjtechWebServerSG Ingress Rules",
+          "Type": "String",
+          "Default": "0.0.0.0/0"
+      },
+      "jjtechWebServerSGingressToPortForHTTP": {
+          "Description": "Provide Security Group Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "80"
+      },
+      "jjtechWebServerSGingressFromPortForHTTP": {
+          "Description": "Provide Security Group Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "80"
+      },
+      "jjtechWebServerSGsourceIPforHTTP": {
+          "Description": "Provide Source IP for jjtechWebServerSG Ingress Rules",
+          "Type": "String",
+          "Default": "0.0.0.0/0"
+      },
+      "jjtechWebServerAZ": {
+          "Description": "Select an AZ for jjtechWebServer",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "jjtechWebServerImageId": {
+          "Description": "Provide ImageId for jjtechWebServer",
+          "Type": "String"
+      },
+      "jjtechWebServerInstanceType": {
+          "Description": "Provide Instance type for WebServer",
+          "Type": "String",
+          "AllowedValues": [
+            "t2.micro",
+            "t2.nano",
+            "t2.small",
+            "t1.micro"
+          ],
+          "ConstraintDescription": "WebServer Instance type must match with specified AllowedValue"
+      },
+      "jjtechWebServerKeyPair": {
+          "Description": "Provide KeyPair Name for WebServer",
+          "Type": "AWS::EC2::KeyPair::KeyName"
+      }
+
+    },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+      "jjtechVPC": {
+        "Type": "AWS::EC2::VPC",
+        "Properties": {
+          "CidrBlock": { "Ref": "jjtechvpcCIDR" },
+          "Tags": [{ "Key": "Name", "Value":  "jjtechVPC" }]
+        }
+      },
+      "jjtechIGW": {
+        "Type": "AWS::EC2::InternetGateway",
+        "Properties": {
+          "Tags": [{ "Key": "Name", "Value":  "jjtechIGW" }]
+        }
+      },
+      "AttachGateway": {
+        "Type": "AWS::EC2::VPCGatewayAttachment",
+        "Properties": {
+          "VpcId": { "Ref": "jjtechVPC" },
+          "InternetGatewayId": { "Ref": "jjtechIGW" }
+        }
+      },
+      "jjtechPubSN": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "jjtechPublicSubnetAZ" },
+          "VpcId": { "Ref": "jjtechVPC" },
+          "CidrBlock": { "Ref": "jjtechPubSNcidr" },
+          "Tags": [{ "Key": "Name", "Value":  "jjtechPubSN" }]
+        }
+      },
+      "jjtechPrvtSN": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "jjtechPrvtSnAZ" },
+          "VpcId": { "Ref": "jjtechVPC" },
+          "CidrBlock": { "Ref": "jjtechPrvtSNcidr" },
+          "Tags": [{ "Key": "Name", "Value":  "jjtechPrvtSN" }]
+        }
+      },
+      "jjtechPrvtRT": {
+        "Type": "AWS::EC2::RouteTable",
+        "Properties": {
+          "VpcId": { "Ref": "jjtechVPC" },
+          "Tags": [{ "Key": "Name", "Value":  "jjtechPrvtRT" }]
+        }
+      },
+      "jjtechPubRT": {
+        "Type": "AWS::EC2::RouteTable",
+        "Properties": {
+          "VpcId": { "Ref": "jjtechVPC" },
+          "Tags": [{ "Key": "Name", "Value":  "jjtechPubRT" }]
+        }
+      },
+      "jjtechPrvtRTAssociation": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+          "SubnetId": { "Ref": "jjtechPrvtSN" },
+          "RouteTableId": { "Ref": "jjtechPrvtRT" }
+        }
+      },
+      "jjtechPubRTAssociation": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+          "SubnetId": { "Ref": "jjtechPubSN" },
+          "RouteTableId": { "Ref": "jjtechPubRT" }
+        }
+      },
+      "jjtechPubRoute": {
+        "Type": "AWS::EC2::Route",
+        "Properties": {
+          "RouteTableId": { "Ref": "jjtechPubRT" },
+          "DestinationCidrBlock": { "Ref": "jjtechPubRTrouteDestinationCidrBlock" },
+          "GatewayId": { "Ref": "jjtechIGW" }
+        }
+      },
+      "jjtechWebServerSG" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "jjtechWebServer Security group",
+          "SecurityGroupIngress" : [{
+            "IpProtocol" : "tcp",
+            "FromPort" : { "Ref": "jjtechWebServerSGingressFromPortForSSH" },
+            "ToPort" : { "Ref": "jjtechWebServerSGingressToPortForSSH" },
+            "CidrIp" : { "Ref": "jjtechWebServerSGsourceIPforSSH" } },
+
+            {
+            "IpProtocol" : "tcp",
+            "FromPort" : { "Ref": "jjtechWebServerSGingressFromPortForHTTP" },
+            "ToPort" : { "Ref": "jjtechWebServerSGingressToPortForHTTP" },
+            "CidrIp" : { "Ref": "jjtechWebServerSGsourceIPforHTTP" } }
+
+            ],
+          "VpcId" : { "Ref": "jjtechVPC" },
+          "Tags" :  [{ "Key": "Name", "Value":  "jjtechWebServerSG" }]
+        }
+      },
+      "jjtechWebServer": {
+        "Type": "AWS::EC2::Instance",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "jjtechWebServerAZ" },
+          "ImageId": { "Ref": "jjtechWebServerImageId" },
+          "InstanceType": { "Ref": "jjtechWebServerInstanceType" },
+          "KeyName" : { "Ref": "jjtechWebServerKeyPair" },
+          "NetworkInterfaces": [ {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "GroupSet": [{ "Ref" : "jjtechWebServerSG" }],
+            "SubnetId": { "Ref" : "jjtechPubSN" }
+          } ]
+        }
+      }
+
+    },
+    "Outputs": {
+
+    }
+}

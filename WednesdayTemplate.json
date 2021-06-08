@@ -1,0 +1,113 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "",
+  "Metadata": {},
+  "Parameters": {
+    "VPCId" : {
+            "Type" : "String"
+        }
+  },
+  "Mappings": {},
+  "Conditions": {},
+  "Resources": {
+    "WebServersSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "WebServersSecurityGroup",
+        "GroupDescription": "SG created for web servers",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VPCId"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WebServersSecurityGroup"
+          }
+        ]
+      }
+    },
+    "AppServersSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "AppServersSecurityGroup",
+        "GroupDescription": "SG created for web servers",
+        "SecurityGroupIngress": [
+          {
+              "IpProtocol" : "udp",
+              "FromPort" : "53",
+              "ToPort" : "53",
+              "CidrIp" : "10.0.0.0/8",
+              "Description" : "DNS from JJTech WAN"
+          },
+          {
+              "IpProtocol" : "tcp",
+              "FromPort" : "53",
+              "ToPort" : "53",
+              "CidrIp" : "10.0.0.0/8",
+              "Description" : "DNS from JJTech WAN"
+          },
+          {
+              "IpProtocol" : "icmp",
+              "FromPort" : "8",
+              "ToPort" : "-1",
+              "CidrIp" : "10.0.0.0/8",
+              "Description" : "ping from JJTech WAN"
+          },
+          {
+              "IpProtocol" : "tcp",
+              "FromPort" : "3389",
+              "ToPort" : "3389",
+              "CidrIp" : "10.0.0.0/8",
+              "Description" : "RDP"
+          },
+          {
+              "IpProtocol" : "tcp",
+              "FromPort" : "22",
+              "ToPort" : "22",
+              "CidrIp" : "10.0.0.0/8",
+              "Description" : "SSH from JJTech WAN"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VPCId"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "AppServersSecurityGroup"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs" : {
+    "WebServerSG" : {
+      "Description" : "print WebServerSG",
+      "Value" : { "Ref": "WebServersSecurityGroup" },
+      "Export" : {
+        "Name" : "WebSecurityGroup"
+      }
+    },
+    "AppServerSG" : {
+      "Description" : "print AppServerSG",
+      "Value" : { "Ref": "AppServersSecurityGroup" },
+      "Export" : {
+        "Name" : "AppSecurityGroup"
+      }
+    }
+  }
+}
